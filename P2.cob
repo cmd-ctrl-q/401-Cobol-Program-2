@@ -119,7 +119,6 @@ PrintCategories.
 
 PrintClass. 
        PERFORM MoveAll
-       DISPLAY LineCount
        *> done once to print student info and header
        IF TF EQUALS 'T' THEN 
            MOVE 'F' TO TF
@@ -134,7 +133,7 @@ PrintClass.
            MOVE SGPA TO SGPA_fixed
            *> compute cumulative gpa 
            COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
-           MOVE CGPA To CGPA_fixed
+           MOVE CGPA TO CGPA_fixed
         *>    print semester and cumulative
            WRITE PrintLine FROM DS AFTER ADVANCING 1 LINE
            WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
@@ -147,10 +146,12 @@ PrintClass.
            PERFORM PrintSemesterYear 
        ELSE IF LineCount EQUALS 8 THEN 
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
-           *> compute semester gpa
+           *> compute semester gpa 
            COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
+           MOVE SGPA TO SGPA_fixed
            *> compute cumulative gpa 
            COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
+           MOVE CGPA TO CGPA_fixed
         *>    print semester and cumulative
            WRITE PrintLine FROM DS AFTER ADVANCING 1 LINE
            WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
