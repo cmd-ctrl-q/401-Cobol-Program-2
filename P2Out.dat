@@ -7,22 +7,25 @@ MICHAEL RICHARDSON
 W1234567
 
 FALL    2019
-COURSE       TITLE                            GR    EARNED    QPT
-CMPS 161     ALGORITHM DSGN/IMPLMNT I         A     3         120
-ENGL 101     FRESHMAN COMPOSITION             B     3         090
-MATH 200     CALCULUS                         C     5         100
-HIST 101     WESTERN CIVILIZATION TO 1500     A     3         120
-SEMESTER                                            1400      000
-CUMULATIVE                                          1400      000
-
-FALL    2019
-CMPS 280     ALGORITHM DSGN/IMPLEM II         A     3         120
-ENGL 102     CRITICAL READING AND WRITING     A     3         120
-MATH 201     CALCULUS II                      A     5         200
-SEMESTER                                            1100      000
-CUMULATIVE                                          2500      000
+COURSE       TITLE                            GR    EARNED    QPTS
+CMPS 161     ALGORITHM DSGN/IMPLMNT I         A     3         12
+ENGL 101     FRESHMAN COMPOSITION             B     3         09
+MATH 200     CALCULUS                         C     5         10
+HIST 101     WESTERN CIVILIZATION TO 1500     A     3         12
+SEMESTER                                            14        43    3.07
+CUMULATIVE                                          14        043   3.07
 
 SPRING  2020
-CMPS 401     SURVEY PROG LANG                 A     3         120
-CMPS 431     COM OPERATING SYST               A     3         120
-ENGL 322     INTRO TO PROF/TECH WRITING       A     3         120
+CMPS 280     ALGORITHM DSGN/IMPLEM II         A     3         12
+ENGL 102     CRITICAL READING AND WRITING     A     3         12
+MATH 201     CALCULUS II                      A     5         20
+SEMESTER                                            11        44    4.00
+CUMULATIVE                                          25        087   3.48
+
+FALL    2020
+CMPS 401     SURVEY PROG LANG                 A     3         12
+CMPS 431     COM OPERATING SYST               A     3         12
+ENGL 322     INTRO TO PROF/TECH WRITING       A     3         12
+MATH 161     MATHEMATICAL STATISTICS I        A     3         12
+SEMESTER                                            12        48    4.00
+CUMULATIVE                                          37        135   3.48

@@ -16,7 +16,7 @@ FILE-CONTROL.
 DATA DIVISION.
 FILE SECTION. 
 FD OutFile. 
-01 PrintLine PIC X(65). *> default for printing a line
+01 PrintLine PIC X(75). *> 75 default for printing a line
 
 FD InFile. 
 01 Student. 
@@ -29,7 +29,7 @@ FD InFile.
            03 ShortName PIC X(10).
            03 LongName PIC X(28).
        02 Grade PIC A.
-       02 Credits PIC 9V99. *> total = 77
+       02 Credits PIC 9.
 01 WSEOF PIC A.
 
 WORKING-STORAGE SECTION. 
@@ -58,20 +58,31 @@ WORKING-STORAGE SECTION.
        02 FILLER PIC X(5) VALUE SPACE. 
        02 PrintGrade PIC A. 
        02 FILLER PIC X(5) VALUE SPACE. 
-       02 PrintCredits PIC 9V99 VALUE 0.
-       02 FILLER PIC X(7) VALUE SPACE. 
-       02 PrintQpts PIC 99V99 VALUE 0.
+       02 PrintCredits PIC 9 VALUE 0.
+       02 FILLER PIC X(9) VALUE SPACE. 
+       02 PrintQpts PIC 99 VALUE 0.
 01 DS. *> semester
        02 DSemester PIC A(52) VALUE "SEMESTER". 
-       02 TotalSemesterCredits PIC 99V99. 
-       02 FILLER PIC X(6) VALUE SPACE.
-       02 SGPA PIC 99V99 VALUE 0. 
+       02 TotalSemesterCredits PIC 99. 
+       02 FILLER PIC X(8) VALUE SPACE.
+       02 TotalSemQPts PIC 99 VALUE 0.
+       02 FILLER PIC X(4) VALUE SPACE.
+       02 SGPA_fixed PIC 9.99. 
+01 SGPA pIC 9V99.
 01 DC. *> overall 
        02 DCumulative PIC A(52) VALUE "CUMULATIVE". 
-       02 TotalCumulativeCredits PIC 99V99.
-       02 FILLER PIC X(6) VALUE SPACE.
-       02 CGPA PIC 99V99 VALUE 0.
-01 GradeVal PIC 9V99 VALUE 0.
+       02 TotalCumulativeCredits PIC 99.
+       02 FILLER PIC X(8) VALUE SPACE.
+       02 TotalCumQPts PIC 999 VALUE 0.
+       02 FILLER PIC X(3) VALUE SPACE.
+       02 CGPA_fixed PIC 9.99.
+01 CGPA PIC 9V99.
+
+*> other vars
+01 GradeVal PIC 9 VALUE 0.
+01 AFloat PIC 9.99. *> use to display float values
+01 TF PIC A VALUE 'T'. *> true/false
+01 LineCount PIC 99 VALUE 0.
 
 PROCEDURE DIVISION.
 *> open student file (P2In.dat)
@@ -82,9 +93,6 @@ OPEN INPUT InFile.
                READ InFile *> read P2In.dat file 
                    AT END MOVE 'Y' TO WSEOF 
                END-READ
-               PERFORM MoveAll
-               PERFORM PrintStudentInfo
-               PERFORM PrintCategories
                PERFORM PrintClass UNTIL WSEOF EQUALS 'Y' *> loop
 CLOSE InFile, OutFile. 
 
@@ -110,43 +118,64 @@ PrintCategories.
        WRITE PrintLine From Categories AFTER ADVANCING 1 LINE.
 
 PrintClass. 
-       IF ASemester NOT EQUAL Semester THEN 
-           *> print one more class
+       PERFORM MoveAll
+       DISPLAY LineCount
+       *> done once to print student info and header
+       IF TF EQUALS 'T' THEN 
+           MOVE 'F' TO TF
+           PERFORM PrintStudentInfo *> print student data
+           PERFORM PrintCategories *> print header
+       END-IF
+       IF ASemester NOT EQUAL Semester THEN
+           MOVE Semester TO ASemester
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
-           *> compute semester gpa 
-           DISPLAY "SGPA " SGPA " Sem Credits " TotalSemesterCredits
-           COMPUTE SGPA ROUNDED = SGPA / TotalSemesterCredits
-           DISPLAY SGPA
+           *> compute semester gpa
+           COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
+           MOVE SGPA TO SGPA_fixed
            *> compute cumulative gpa 
-           COMPUTE CGPA ROUNDED = CGPA * TotalCumulativeCredits
-           *> print semester and cumulative
+           COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
+           MOVE CGPA To CGPA_fixed
+        *>    print semester and cumulative
            WRITE PrintLine FROM DS AFTER ADVANCING 1 LINE
            WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
            *> reset semester credits 
            MOVE 0 TO TotalSemesterCredits
            *> reset Semester GPA
            MOVE 0 TO SGPA
+           *> reset total semester Qpts 
+           MOVE 0 TO TotalSemQPts
            PERFORM PrintSemesterYear 
-       ELSE 
+       ELSE IF LineCount EQUALS 8 THEN 
+           WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
+           *> compute semester gpa
+           COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
+           *> compute cumulative gpa 
+           COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
+        *>    print semester and cumulative
+           WRITE PrintLine FROM DS AFTER ADVANCING 1 LINE
+           WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
+       ELSE
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
        END-IF
-       PERFORM MoveAll.
+       COMPUTE LineCount = LineCount + 1.
+
 
 MoveAll. 
        MOVE FirstName TO PrintFirst 
-       MOVE LastName To PrintLast 
+       MOVE LastName TO PrintLast 
        MOVE WNum TO PrintWNum
        MOVE Semester TO ASemester 
        MOVE ShortName TO PrintShort
        MOVE LongName TO PrintLong
        MOVE Grade TO PrintGrade 
        MOVE Credits TO PrintCredits
-       COMPUTE TotalSemesterCredits ROUNDED = TotalSemesterCredits + Credits
-       COMPUTE TotalCumulativeCredits ROUNDED = TotalCumulativeCredits + Credits
+       COMPUTE TotalSemesterCredits = TotalSemesterCredits + Credits
+       COMPUTE TotalCumulativeCredits = TotalCumulativeCredits + Credits
        PERFORM CheckGradeValue
-    *>    COMPUTE SGPA = SGPA + GradeVal *> sum semester GPA
-       COMPUTE PrintQpts = GradeVal * PrintCredits. *> calculate qpts
-    *>    COMPUTE SGPA = PrintQpts / PrintCredits.
+       COMPUTE PrintQpts = GradeVal * PrintCredits *> calculate qpts
+       COMPUTE TotalSemQPts = TotalSemQPts + PrintQpts
+       COMPUTE TotalCumQPts = TotalCumQPts + PrintQpts.
+
 
 CheckGradeValue.
        IF Grade EQUAL 'A' THEN 
@@ -165,6 +194,5 @@ CheckGradeValue.
 *> finally
 READ InFile 
        AT END MOVE 'Y' TO WSEOF
-    *> AT END SET WSEOF TO TRUE 
 END-READ. 
 
