@@ -1,7 +1,7 @@
        >>SOURCE FORMAT FREE
 IDENTIFICATION DIVISION.
 PROGRAM-ID. P2.
-AUTHOR. Batman. 
+AUTHOR. Pay-pao Mafia. 
 DATE-WRITTEN. Sept 6nd 2020 
 
 ENVIRONMENT DIVISION. 
@@ -9,14 +9,14 @@ ENVIRONMENT DIVISION.
 INPUT-OUTPUT SECTION. 
 FILE-CONTROL.
        SELECT InFile ASSIGN TO "P2In.dat" 
-           ORGANIZATION IS LINE SEQUENTIAL.
-       SELECT OutFile ASSIGN TO "P2Out.dat" 
            ORGANIZATION IS LINE SEQUENTIAL. *> each piece of data takes up its own line 
+       SELECT OutFile ASSIGN TO "P2Out.dat" 
+           ORGANIZATION IS LINE SEQUENTIAL. 
 
 DATA DIVISION.
 FILE SECTION. 
 FD OutFile. 
-01 PrintLine PIC X(75). *> 75 default for printing a line
+01 PrintLine PIC X(75). *> default for printing a line
 
 FD InFile. 
 01 Student. 
@@ -30,7 +30,7 @@ FD InFile.
            03 LongName PIC X(28).
        02 Grade PIC A.
        02 Credits PIC 9.
-01 WSEOF PIC A.
+01 EOF PIC A.
 
 WORKING-STORAGE SECTION. 
 *> define custom report 
@@ -89,11 +89,11 @@ PROCEDURE DIVISION.
 OPEN INPUT InFile.
        *> open student output file (P2Out.dat) 
        OPEN OUTPUT OutFile.
-               PERFORM PrintHeader *> print header
+               PERFORM PrintHeader 
                READ InFile *> read P2In.dat file 
-                   AT END MOVE 'Y' TO WSEOF 
+                   AT END MOVE 'Y' TO EOF 
                END-READ
-               PERFORM PrintClass UNTIL WSEOF EQUALS 'Y' *> loop
+               PERFORM PrintClass UNTIL EOF EQUALS 'Y' *> loop
 CLOSE InFile, OutFile. 
 
 STOP RUN. 
@@ -193,6 +193,6 @@ CheckGradeValue.
 
 *> finally
 READ InFile 
-       AT END MOVE 'Y' TO WSEOF
+       AT END MOVE 'Y' TO EOF
 END-READ. 
 
