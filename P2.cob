@@ -36,7 +36,7 @@ WORKING-STORAGE SECTION.
 *> define custom report 
 01 Header. 
        *> header
-       02 Slu PIC X(33) VALUE "SOUTHEASTERN LOUISIANA UNIVERSITY". 
+       02 Slu PIC X(33) VALUE "SOUTHEASTERN LOUISIANA UNIVERSITY".
        02 SluAddress PIC X(17) VALUE "HAMMOND, LA 70402". 
 01 StudentInfo. *> 23
        02 PrintFull.
@@ -66,16 +66,17 @@ WORKING-STORAGE SECTION.
        02 TotalSemesterCredits PIC 99. 
        02 FILLER PIC X(8) VALUE SPACE.
        02 TotalSemQPts PIC 99 VALUE 0.
-       02 FILLER PIC X(4) VALUE SPACE.
+       02 FILLER PIC X(3) VALUE SPACE.
        02 SGPA_fixed PIC 9.99. 
 01 SGPA pIC 9V99.
 01 DC. *> overall 
        02 DCumulative PIC A(52) VALUE "CUMULATIVE". 
        02 TotalCumulativeCredits PIC 99.
-       02 FILLER PIC X(8) VALUE SPACE.
-       02 TotalCumQPts PIC 999 VALUE 0.
+       02 FILLER PIC X(7) VALUE SPACE.
+       02 TotalCumQPts_fixed PIC Z99.
        02 FILLER PIC X(3) VALUE SPACE.
        02 CGPA_fixed PIC 9.99.
+01 TotalCumQPts PIC 999 VALUE 0.
 01 CGPA PIC 9V99.
 
 *> other vars
@@ -83,13 +84,18 @@ WORKING-STORAGE SECTION.
 01 AFloat PIC 9.99. *> use to display float values
 01 TF PIC A VALUE 'T'. *> true/false
 01 LineCount PIC 99 VALUE 0.
+01 Ptr PIC 99 VALUE 22.
+01 SLength PIC 99.
+01 TempInt PIC 99.
+01 TempLine1 PIC X(75). *> temp print line
+01 TempLine2 PIC X(75). *> temp print line
 
 PROCEDURE DIVISION.
 *> open student file (P2In.dat)
 OPEN INPUT InFile.
        *> open student output file (P2Out.dat) 
        OPEN OUTPUT OutFile.
-               PERFORM PrintHeader 
+               PERFORM PrettifyHeader 
                READ InFile *> read P2In.dat file 
                    AT END MOVE 'Y' TO EOF 
                END-READ
@@ -102,20 +108,43 @@ STOP RUN.
 
 *> Paragraphs 
 
-PrintHeader. 
-       WRITE PrintLine FROM Slu AFTER ADVANCING 2 LINE
-       WRITE PrintLine FROM SluAddress AFTER ADVANCING 1 LINE.
+PrettifyHeader. 
+       *> SLU Title
+       *> get size of Slu string
+       INSPECT Slu TALLYING SLength FOR CHARACTERS
+       *> formula
+       COMPUTE Ptr = (75 - SLength) / 2
+       *> add Slu string into PrintLine at pointer 
+       STRING Slu DELIMITED BY SIZE INTO TempLine1 WITH POINTER Ptr
+       WRITE PrintLine FROM TempLine1 AFTER ADVANCING 2 LINES
+       DISPLAY PrintLine *> display in shell
+
+       *> SLU Address
+       *> get size of Slu string
+       COMPUTE SLength = 0
+       INSPECT SluAddress TALLYING SLength FOR CHARACTERS
+       *> formula
+       COMPUTE Ptr = (75 - SLength) / 2
+       *> add address into PrintLine at pointer 
+       STRING SluAddress DELIMITED BY SIZE INTO TempLine2 WITH POINTER Ptr
+       WRITE PrintLine FROM TempLine2 AFTER ADVANCING 1 LINES
+       DISPLAY PrintLine. *> display in shell
 
 PrintStudentInfo.
        WRITE PrintLine FROM PrintFull AFTER ADVANCING 2 LINES
-       WRITE PrintLine FROM PrintWNum AFTER ADVANCING 1 LINE.
+       DISPLAY PrintLine *> display in shell
+       WRITE PrintLine FROM PrintWNum AFTER ADVANCING 1 LINE
+       DISPLAY PrintLine. *> display in shell
 
 PrintSemesterYear. 
-       WRITE PrintLine FROM ASemester AFTER ADVANCING 2 LINES.
+       WRITE PrintLine FROM ASemester AFTER ADVANCING 2 LINES
+       DISPLAY PrintLine. *> display in shell
 
 PrintCategories. 
        WRITE PrintLine FROM ASemester AFTER ADVANCING 2 LINES
-       WRITE PrintLine From Categories AFTER ADVANCING 1 LINE.
+       DISPLAY PrintLine *> display in shell
+       WRITE PrintLine From Categories AFTER ADVANCING 1 LINE
+       DISPLAY PrintLine. *> display in shell
 
 PrintClass. 
        PERFORM MoveAll
@@ -128,15 +157,19 @@ PrintClass.
        IF ASemester NOT EQUAL Semester THEN
            MOVE Semester TO ASemester
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
+           DISPLAY PrintLine *> display in shell
            *> compute semester gpa
            COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
            MOVE SGPA TO SGPA_fixed
            *> compute cumulative gpa 
            COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
            MOVE CGPA TO CGPA_fixed
+           MOVE TotalCumQPts TO TotalCumQPts_fixed
         *>    print semester and cumulative
            WRITE PrintLine FROM DS AFTER ADVANCING 1 LINE
+           DISPLAY PrintLine *> display in shell
            WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
+           DISPLAY PrintLine *> display in shell
            *> reset semester credits 
            MOVE 0 TO TotalSemesterCredits
            *> reset Semester GPA
@@ -146,17 +179,22 @@ PrintClass.
            PERFORM PrintSemesterYear 
        ELSE IF LineCount EQUALS 8 THEN 
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
+           DISPLAY PrintLine *> display in shell
            *> compute semester gpa 
            COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
            MOVE SGPA TO SGPA_fixed
            *> compute cumulative gpa 
            COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
            MOVE CGPA TO CGPA_fixed
+           MOVE TotalCumQPts TO TotalCumQPts_fixed
         *>    print semester and cumulative
            WRITE PrintLine FROM DS AFTER ADVANCING 1 LINE
+           DISPLAY PrintLine *> display in shell
            WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
+           DISPLAY PrintLine *> display in shell
        ELSE
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
+           DISPLAY PrintLine *> display in shell
        END-IF
        COMPUTE LineCount = LineCount + 1.
 
