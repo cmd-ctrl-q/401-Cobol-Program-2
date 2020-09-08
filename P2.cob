@@ -89,6 +89,7 @@ WORKING-STORAGE SECTION.
 01 TempInt PIC 99.
 01 TempLine1 PIC X(75). *> temp print line
 01 TempLine2 PIC X(75). *> temp print line
+01 BlankLine PIC X(75). *> temp print line
 
 PROCEDURE DIVISION.
 *> open student file (P2In.dat)
@@ -128,13 +129,15 @@ PrettifyHeader.
        *> add address into PrintLine at pointer 
        STRING SluAddress DELIMITED BY SIZE INTO TempLine2 WITH POINTER Ptr
        WRITE PrintLine FROM TempLine2 AFTER ADVANCING 1 LINES
-       DISPLAY PrintLine. *> display in shell
+       DISPLAY PrintLine *> display in shell
+       DISPLAY BlankLine.
 
 PrintStudentInfo.
        WRITE PrintLine FROM PrintFull AFTER ADVANCING 2 LINES
        DISPLAY PrintLine *> display in shell
        WRITE PrintLine FROM PrintWNum AFTER ADVANCING 1 LINE
-       DISPLAY PrintLine. *> display in shell
+       DISPLAY PrintLine *> display in shell
+       DISPLAY BlankLine.
 
 PrintSemesterYear. 
        WRITE PrintLine FROM ASemester AFTER ADVANCING 2 LINES
@@ -170,6 +173,7 @@ PrintClass.
            DISPLAY PrintLine *> display in shell
            WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
            DISPLAY PrintLine *> display in shell
+           DISPLAY BlankLine
            *> reset semester credits 
            MOVE 0 TO TotalSemesterCredits
            *> reset Semester GPA
@@ -192,12 +196,12 @@ PrintClass.
            DISPLAY PrintLine *> display in shell
            WRITE PrintLine FROM DC AFTER ADVANCING 1 LINE
            DISPLAY PrintLine *> display in shell
+           DISPLAY BlankLine
        ELSE
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
            DISPLAY PrintLine *> display in shell
        END-IF
        COMPUTE LineCount = LineCount + 1.
-
 
 MoveAll. 
        MOVE FirstName TO PrintFirst 
