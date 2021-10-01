@@ -57,23 +57,26 @@ WORKING-STORAGE SECTION.
        02 FILLER PIC X(5) VALUE SPACE. 
        02 PrintCredits PIC 9 VALUE 0.
        02 FILLER PIC X(9) VALUE SPACE. 
-       02 PrintQpts PIC 99 VALUE 0.
+       02 QPTS_fixed PIC Z9.99.
+01 QPT PIC 99.
 01 DS. 
        02 DSemester PIC A(52) VALUE "SEMESTER". 
        02 TotalSemesterCredits PIC 99. 
        02 FILLER PIC X(8) VALUE SPACE.
-       02 TotalSemQPts PIC 99 VALUE 0.
+       02 TotalSemQPts_fixed PIC Z9.99.
        02 FILLER PIC X(3) VALUE SPACE.
-       02 SGPA_fixed PIC 9.99. 
+       02 SGPA_fixed PIC Z9.99.
+01 TotalSemQPts PIC 99V99 VALUE 0.
+01 TSQPTS PIC 9V99.
 01 SGPA PIC 9V99.
 01 DC. *> overall 
        02 DCumulative PIC A(52) VALUE "CUMULATIVE". 
        02 TotalCumulativeCredits PIC 99.
        02 FILLER PIC X(7) VALUE SPACE.
-       02 TotalCumQPts_fixed PIC Z99.
+       02 TotalCumQPts_fixed PIC Z99.99.
        02 FILLER PIC X(3) VALUE SPACE.
-       02 CGPA_fixed PIC 9.99.
-01 TotalCumQPts PIC 999 VALUE 0.
+       02 CGPA_fixed PIC Z9.99.
+01 TotalCumQPts PIC 999V99 VALUE 0.
 01 CGPA PIC 9V99.
 
 01 TempA PIC X(75). 
@@ -142,7 +145,7 @@ PrintClass.
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
            DISPLAY PrintLine 
            *> compute semester gpa
-           COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
+           COMPUTE SGPA = TSQPTS / TotalSemesterCredits
            MOVE SGPA TO SGPA_fixed
            *> compute cumulative gpa 
            COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
@@ -160,7 +163,7 @@ PrintClass.
            *> reset Semester GPA
            MOVE 0 TO SGPA
            *> reset total semester Qpts 
-           MOVE 0 TO TotalSemQPts
+           MOVE 0 TO TSQPTS
 
            PERFORM PrintSemesterYear 
 
@@ -169,8 +172,9 @@ PrintClass.
            DISPLAY PrintLine 
 
            *> compute semester gpa 
-           COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
-           MOVE SGPA TO SGPA_fixed
+           COMPUTE SGPA = TSQPTS / TotalSemesterCredits
+           MOVE SGPA to SGPA_fixed
+           MOVE TotalSemQPts TO TotalSemQPts_fixed
 
            *> compute cumulative gpa 
            COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
@@ -203,9 +207,12 @@ MoveAll.
        PERFORM CheckGradeValue
 
     *>    calculate qpts 
-       COMPUTE PrintQpts = GradeVal * PrintCredits 
-       COMPUTE TotalSemQPts = TotalSemQPts + PrintQpts
-       COMPUTE TotalCumQPts = TotalCumQPts + PrintQpts.
+       COMPUTE QPT = GradeVal * PrintCredits 
+       COMPUTE TotalSemQPts = TotalSemQPts + QPT
+       COMPUTE TotalCumQPts = TotalCumQPts + QPT
+
+       MOVE TSQPTS to TotalSemQPts_fixed
+       MOVE QPT to QPTS_fixed.
 
 
 CheckGradeValue.
