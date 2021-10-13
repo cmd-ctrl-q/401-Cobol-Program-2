@@ -15,7 +15,7 @@ FILE-CONTROL.
 DATA DIVISION.
 FILE SECTION. 
 FD OutFile. 
-01 PrintLine PIC X(75). 
+01 PrintLine PIC X(80). 
 
 FD InFile. 
 01 Student. 
@@ -45,7 +45,7 @@ WORKING-STORAGE SECTION.
        02 COURSE PIC A(13) VALUE "COURSE".
        02 TITLES PIC A(33) VALUE "TITLE".
        02 GR PIC A(6) VALUE "GR".
-       02 EARNED PIC A(10) VALUE "EARNED".
+       02 EARNED PIC A(13) VALUE "EARNED".
        02 QPTS PIC A(4) VALUE "QPTS".
        02 FILLER PIC X(5) VALUE SPACE. 
 01 ClassInfo.
@@ -55,25 +55,30 @@ WORKING-STORAGE SECTION.
        02 FILLER PIC X(5) VALUE SPACE. 
        02 PrintGrade PIC A. 
        02 FILLER PIC X(5) VALUE SPACE. 
-       02 PrintCredits PIC 9 VALUE 0.
+       02 PrintCredits PIC Z9.99.
        02 FILLER PIC X(9) VALUE SPACE. 
-       02 PrintQpts PIC 99 VALUE 0.
+       02 PrintQpts PIC Z9.99.
+01 CreditsEarned PIC 9V99.
+01 Qpoints PIC 99V99.
 01 DS. 
-       02 DSemester PIC A(52) VALUE "SEMESTER". 
-       02 TotalSemesterCredits PIC 99. 
+       02 DSemester PIC A(51) VALUE "SEMESTER". 
+       02 TotalSemesterCredits PIC Z99.99. 
        02 FILLER PIC X(8) VALUE SPACE.
-       02 TotalSemQPts PIC 99 VALUE 0.
+       02 TotalSemQPts PIC Z99.99.
        02 FILLER PIC X(3) VALUE SPACE.
        02 SGPA_fixed PIC 9.99. 
+01 SemCreditEarned PIC 99V99.
+01 SemQPts PIC 99V99.
 01 SGPA PIC 9V99.
 01 DC. *> overall 
-       02 DCumulative PIC A(52) VALUE "CUMULATIVE". 
-       02 TotalCumulativeCredits PIC 99.
-       02 FILLER PIC X(7) VALUE SPACE.
-       02 TotalCumQPts_fixed PIC Z99.
+       02 DCumulative PIC A(51) VALUE "CUMULATIVE". 
+       02 TotalCumulativeCredits PIC Z99.99.
+       02 FILLER PIC X(8) VALUE SPACE.
+       02 TotalCumQPts_fixed PIC Z99.99.
        02 FILLER PIC X(3) VALUE SPACE.
        02 CGPA_fixed PIC 9.99.
-01 TotalCumQPts PIC 999 VALUE 0.
+01 TotalCumCredits PIC 999V99.
+01 TotalCumQPts PIC 999V99.
 01 CGPA PIC 9V99.
 
 01 TempA PIC X(75). 
@@ -142,10 +147,10 @@ PrintClass.
            WRITE PrintLine FROM ClassInfo AFTER ADVANCING 1 LINE
            DISPLAY PrintLine 
            *> compute semester gpa
-           COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
+           COMPUTE SGPA = SemQPts / SemCreditEarned
            MOVE SGPA TO SGPA_fixed
            *> compute cumulative gpa 
-           COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
+           COMPUTE CGPA = TotalCumQPts / TotalCumCredits
            MOVE CGPA TO CGPA_fixed
            MOVE TotalCumQPts TO TotalCumQPts_fixed
 
@@ -156,11 +161,11 @@ PrintClass.
            DISPLAY TempC
 
            *> reset semester credits 
-           MOVE 0 TO TotalSemesterCredits
+           MOVE 0 TO SemCreditEarned
            *> reset Semester GPA
            MOVE 0 TO SGPA
            *> reset total semester Qpts 
-           MOVE 0 TO TotalSemQPts
+           MOVE 0 TO SemQPts
 
            PERFORM PrintSemesterYear 
 
@@ -169,11 +174,11 @@ PrintClass.
            DISPLAY PrintLine 
 
            *> compute semester gpa 
-           COMPUTE SGPA = TotalSemQPts / TotalSemesterCredits
+           COMPUTE SGPA = SemQPts / SemCreditEarned
            MOVE SGPA TO SGPA_fixed
 
            *> compute cumulative gpa 
-           COMPUTE CGPA = TotalCumQPts / TotalCumulativeCredits
+           COMPUTE CGPA = TotalCumQPts / TotalCumCredits
            MOVE CGPA TO CGPA_fixed
            MOVE TotalCumQPts TO TotalCumQPts_fixed
 
@@ -197,16 +202,20 @@ MoveAll.
        MOVE ShortName TO PrintShort
        MOVE LongName TO PrintLong
        MOVE Grade TO PrintGrade 
-       MOVE Credits TO PrintCredits
-       COMPUTE TotalSemesterCredits = TotalSemesterCredits + Credits
-       COMPUTE TotalCumulativeCredits = TotalCumulativeCredits + Credits
+       MOVE Credits TO CreditsEarned
+       COMPUTE SemCreditEarned = SemCreditEarned + Credits
+       COMPUTE TotalCumCredits = TotalCumCredits + Credits
        PERFORM CheckGradeValue
 
     *>    calculate qpts 
-       COMPUTE PrintQpts = GradeVal * PrintCredits 
-       COMPUTE TotalSemQPts = TotalSemQPts + PrintQpts
-       COMPUTE TotalCumQPts = TotalCumQPts + PrintQpts.
-
+       COMPUTE Qpoints = GradeVal * CreditsEarned 
+       COMPUTE SemQPts = SemQPts + Qpoints
+       COMPUTE TotalCumQPts = TotalCumQPts + Qpoints
+       MOVE Qpoints TO PrintQpts
+       MOVE CreditsEarned TO PrintCredits
+       MOVE SemCreditEarned TO TotalSemesterCredits
+       MOVE TotalCumCredits TO TotalCumulativeCredits
+       MOVE SemQPts TO TotalSemQPts.
 
 CheckGradeValue.
        IF Grade EQUAL 'A' THEN 
